@@ -5,15 +5,23 @@ import java.util.Vector;
 
 public class Board {
     private int [][] tiles;
-    int N;
+    private int N;
+    private Board previous;
+    private int hamming_distance;
+    private int manhattan_distance;
+    private int moves;
 
     public Board(final int[][] t, int n){
         N = n;
         tiles = new int[N][N];
         for(int i = 0; i < N; i++){
-            for(int j = 0; j < N; j++)
+            for(int j = 0; j < N; j++) {
                 tiles[i][j] = t[i][j];
+            }
+
         }
+        hamming_distance = hammingDistance();
+        manhattan_distance = manhattanDistance();
     }
     public int hammingDistance(){
         int hammingDist = 0;
@@ -54,7 +62,7 @@ public class Board {
         }
         for(int i = -1; i < 2; i++){
             for(int j = -1; j < 2; j++){
-                if(i == j)
+                if(Math.abs(i) == Math.abs(j))
                     continue;
                 int x_cur = x + i, y_cur = y + j;
                 if(x_cur < 0 || x_cur >= N)
@@ -81,4 +89,10 @@ public class Board {
 
     public final int[][] getTitles(){return tiles;}
     public int getN(){return N;}
+    public Board getPrevious(){return previous;}
+    public void setPrevious(Board p){previous = p;}
+    public void setMoves(int m){moves = m;}
+    public int getMoves(){return moves;};
+    public int getManhattanDistance(){return manhattan_distance;}
+    public int getHammingDistance(){return hamming_distance;}
 }
