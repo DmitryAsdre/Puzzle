@@ -78,4 +78,7 @@ public class Board {
 
         return output;
     }
+
+    public final int[][] getTitles(){return tiles;}
+    public int getN(){return N;}
 }
