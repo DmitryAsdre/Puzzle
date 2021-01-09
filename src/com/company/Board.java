@@ -10,6 +10,7 @@ public class Board {
     private int hamming_distance;
     private int manhattan_distance;
     private int moves;
+    private int x_void, y_void;
 
     public Board(final int[][] t, int n){
         N = n;
@@ -17,11 +18,16 @@ public class Board {
         for(int i = 0; i < N; i++){
             for(int j = 0; j < N; j++) {
                 tiles[i][j] = t[i][j];
+                if(tiles[i][j] == 0) {
+                    y_void = i;
+                    x_void = j;
+                }
             }
-
         }
         hamming_distance = hammingDistance();
         manhattan_distance = manhattanDistance();
+        previous = null;
+        moves = 0;
     }
     public int hammingDistance(){
         int hammingDist = 0;
@@ -65,6 +71,8 @@ public class Board {
                 if(Math.abs(i) == Math.abs(j))
                     continue;
                 int x_cur = x + i, y_cur = y + j;
+                if(previous != null && previous.x_void == x_cur && previous.y_void == y_cur)
+                    continue;
                 if(x_cur < 0 || x_cur >= N)
                     continue;
                 if(y_cur < 0 || y_cur >= N)
@@ -95,4 +103,6 @@ public class Board {
     public int getMoves(){return moves;};
     public int getManhattanDistance(){return manhattan_distance;}
     public int getHammingDistance(){return hamming_distance;}
+    public int getX_void(){return x_void;}
+    public int getY_void(){return y_void;}
 }
