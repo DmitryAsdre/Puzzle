@@ -62,6 +62,7 @@ public class Main {
      }
 
     public static void main(String[] args){
+        //Графики завистимости колич. операций от ratio=a/b можно посмотреть в README.md. Лучше на гитхабе, а то в idea плохо рендерится.
         /*try {
             createAllReports();
         }catch(IOException e){
