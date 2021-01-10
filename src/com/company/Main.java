@@ -73,9 +73,12 @@ public class Main {
         Board b = new Board(tile, N);
         Solver solver = new Solver(b);
         try{
-            solver.solve(7.0, 1.0, (int)3e6);
+            Vector<Board> moves = solver.solve(7.0, 1.0, (int)3e6);
             System.out.println(b.toString());
             System.out.println("Operations : " + solver.getOperations());
+            System.out.println("Moves - " + moves.size());
+            for(Board m : moves)
+                System.out.println(m.toString());
         }catch(RuntimeException e){
             System.out.println(b.toString());
             System.out.println(e.getMessage());
