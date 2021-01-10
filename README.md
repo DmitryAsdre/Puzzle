@@ -2,7 +2,7 @@
 ## Графики
 Зависимость количества операций от отношения 
 ```math
-ratio = \frac{a}{b}
+$'ratio = \frac{a}{b}'$
 ```
 ```math
 priority = a * hamming_distance + b*moves
