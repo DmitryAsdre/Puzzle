@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.*;
 
 public class Main {
@@ -12,116 +13,72 @@ public class Main {
             Solver solver = new Solver(initial_position);
             if (!solver.isSolvable())
                 return;
-            BufferedWriter writer_tiles = new BufferedWriter(new FileWriter(output_file + "_tiles.txt"));
+            BufferedWriter writer_tiles = new BufferedWriter(new FileWriter("reports/" + output_file + "_tiles.txt"));
             writer_tiles.write(initial_position.toString());
             writer_tiles.close();
-            BufferedWriter writer = new BufferedWriter(new FileWriter(output_file + ".csv"));
-            writer.write("Ratio,#ofOperations\n");
+            BufferedWriter writer = new BufferedWriter(new FileWriter("reports/" + output_file + ".csv"));
+            writer.write("Ratio,#ofOperations,ReachedMaxOperations\n");
             for (double ratio = ratio_from; ratio < ratio_to; ratio += ratio_step) {
-                solver.solve(ratio, 1.0);
-                writer.write(ratio + "," + solver.getOperations() + "\n");
-                System.out.println(ratio + " " + solver.getOperations());
+                try {
+                    solver.solve(ratio, 1.0, (int)4e6);
+                    writer.write(ratio + "," + solver.getOperations() + ",0" + "\n");
+                    System.out.println(ratio + " " + solver.getOperations());
+                }catch (ReachedMaxOperationsException e){
+                    writer.write(ratio + "," + 4e6 + ",1" + "\n");
+                    System.out.println(ratio + " " + e.getMessage());
+                }
             }
             writer.close();
         }
      public static void createAllReports()
         throws IOException{
-         int [][] tiles = {{1, 2, 3, 4}, {7, 5, 6, 8}, {9, 10, 11, 12}, {14, 15, 13, 0}};
+         int [][] tiles = {{1, 2, 3, 4}, {7, 5, 6, 8}, {9, 10, 11, 12}, {14, 15, 13, 0}};  //test_1
          Board b1 = new Board(tiles, 4);
-
-
+         createReportCSV(b1, "test_1", 0.2, 100, 0.1);
+         tiles = new int[][]{{7, 6, 13, 10}, {8, 9, 0, 11}, {15, 2, 12, 5}, {3, 1, 14, 4}}; //test_2
+         b1 = new Board(tiles, 4);
+         createReportCSV(b1, "test_2", 0.2, 50, 0.1);
+         tiles = new int[][]{{1, 8, 2}, {0, 4, 3}, {7, 6, 5}}; // test_3
+         b1 = new Board(tiles, 3);
+         createReportCSV(b1, "test_3", 0.2, 100, 0.1);
+         tiles = new int[][]{{2, 10, 13, 3}, {1, 12, 8, 4}, {5, 0, 9, 6},{15, 14, 11, 7}}; //test_4
+         b1 = new Board(tiles, 4);
+         createReportCSV(b1, "test_4", 0.2, 100, 0.1);
         }
-
-    public static Pair<int[], Integer> countInvMerge(int[] tiles, int l, int r){
-        int inversions = 0;
-        int[] sorted = new int[r - l];
-        if(r - l < 2){
-            sorted[0] = tiles[l];
-        }else{
-            int mid = (r + l)/2;
-            Pair<int[], Integer> left = countInvMerge(tiles, l, mid);
-            Pair<int[], Integer> right = countInvMerge(tiles, mid, r);
-            inversions += left.b;
-            inversions += right.b;
-            int counter_left = 0;
-            int counter_right = 0;
-            if(l == 1 && r == 3){
-                System.out.println(left.b + " " + right.b);
-                System.out.println(Arrays.toString(left.a)+ " " + Arrays.toString(right.a) + " ");
-            }
-            for(int i = 0; i < r - l; i++) {
-                if(counter_left == mid - l || (counter_right != r - mid && left.a[counter_left] > right.a[counter_right])) {
-                    if(l == 1 && r == 3)
-                        System.out.println("I am here" + counter_left + " " + (mid- l));
-                    sorted[i] = right.a[counter_right];
-                    counter_right++;
-                    if(counter_left != mid - l)
-                        inversions += mid - l - counter_left;
-                }else {
-                    sorted[i] = left.a[counter_left];
-                    counter_left++;
-                }
-            }
-        }
-        System.out.println("l " + l + " r "+ r + " Inversions : " + inversions);
-        return new Pair<int[], Integer>(sorted, inversions);
-    }
-    public static int countInvDummy(int [][] tiles, int N){
-        int inversions = 0;
+     public static int[][] genRandomTile(int N){
+        Integer[] tile = new Integer[N*N];
+        for(int i = 0; i < N*N; i++)
+            tile[i] = i;
+        List<Integer> int_list = Arrays.asList(tile);
+        Collections.shuffle(int_list);
+        int_list.toArray(tile);
+        int [][] tiles = new int[N][N];
         for(int i = 0; i < N*N; i++){
-            for(int j = 0; j < N*N; j++) {
-                int x1 = i % N;
-                int y1 = i / N;
-                int x2 = j % N;
-                int y2 = j / N;
-                if(tiles[y1][x1] == 0 || tiles[y2][x2] == 0)
-                    continue;
-                if(tiles[y1][x1] > tiles[y2][x2] && i < j)
-                    inversions++;
-            }
+            int x = i % N;
+            int y = i / N;
+            tiles[y][x] = tile[i];
         }
-        return inversions;
-    }
-    public static int countInv(int [][] tiles, int N){
-        int [] tiles_flat = new int[N*N - 1];
-        int zero = 0;
-        for(int i = 0; i < N; i++){
-            for(int j = 0; j < N; j++){
-                if(tiles[i][j] != 0)
-                    tiles_flat[i*N + j - zero] = tiles[i][j];
-                else
-                    zero = 1;
-            }
-        }
-        System.out.println(Arrays.toString(tiles_flat));
-        Pair<int[], Integer> output = countInvMerge(tiles_flat, 0, N*N - 1);
-        System.out.println(Arrays.toString(output.a));
-        return output.b;
-    }
+        return tiles;
+     }
+
     public static void main(String[] args){
-        // write your code here
-        //int [][] tiles = {{3, 9, 1, 15}, {14, 11, 4, 6}, {13, 0, 10, 12}, {2, 7, 8, 5}}; // 56
-        //int [][] tiles = {{13, 2, 10, 3}, {1, 12, 8, 4}, {5, 0, 9, 6}, {15, 14, 11, 7}}; // 41
-        int [][] tiles = {{3, 4, 1}, {0, 5, 2}, {6, 8, 7}};
-        System.out.println(countInv(tiles, 3));
-        System.out.println(countInvDummy(tiles, 3));
-        /*
-        solver.solve(1.0, 1.0);
-        System.out.println(solver.getOperations());
-
-
-
-         */
-        /*if(solver.isSolvable()){
-            System.out.println("Solvable!");
-            Vector<Board> positions = solver.solve(1.4, 1.0);
-            System.out.println("Operations " + solver.getOperations());
-            System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-            for(Board p : positions)
-                System.out.println(p.toString());
-            System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-        }else{
-            System.out.println("Not solvable!");
+        /*try {
+            createAllReports();
+        }catch(IOException e){
+            System.out.println(e.getMessage());
         }*/
+        int N = 4;
+        int [][] tile = genRandomTile(N);
+        Board b = new Board(tile, N);
+        Solver solver = new Solver(b);
+        try{
+            solver.solve(7.0, 1.0, (int)3e6);
+            System.out.println(b.toString());
+            System.out.println("Operations : " + solver.getOperations());
+        }catch(RuntimeException e){
+            System.out.println(b.toString());
+            System.out.println(e.getMessage());
+        }
     }
 }
+
